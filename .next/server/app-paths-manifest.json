@@ -1,0 +1,6 @@
+{
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/goals/page": "app/goals/page.js",
+  "/2026/[date]/page": "app/2026/[date]/page.js"
+}

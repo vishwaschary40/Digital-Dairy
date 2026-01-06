@@ -1,7 +1,9 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   format,
@@ -24,7 +26,7 @@ interface CalendarGridProps {
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function CalendarGrid({ loggedDates = [], year = 2026 }: CalendarGridProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date(year, 0, 1));
 
   const loggedDatesSet = useMemo(() => new Set(loggedDates), [loggedDates]);
@@ -33,11 +35,11 @@ export function CalendarGrid({ loggedDates = [], year = 2026 }: CalendarGridProp
     const start = startOfMonth(currentDate);
     const end = endOfMonth(currentDate);
     const daysInMonth = eachDayOfInterval({ start, end });
-    
+
     // Add padding for the first week
     const firstDayOfWeek = getDay(start);
     const padding = Array(firstDayOfWeek).fill(null);
-    
+
     return [...padding, ...daysInMonth];
   }, [currentDate]);
 
@@ -47,7 +49,7 @@ export function CalendarGrid({ loggedDates = [], year = 2026 }: CalendarGridProp
   const handleDayClick = (date: Date) => {
     if (isFuture(date)) return;
     const dateStr = format(date, "MM-dd");
-    navigate(`/2026/${dateStr}`);
+    router.push(`/2026/${dateStr}`);
   };
 
   return (

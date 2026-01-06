@@ -1,4 +1,7 @@
-import { NavLink, useLocation } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Home, CalendarDays, Target, User } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,7 +14,7 @@ const navItems = [
 ];
 
 export function BottomNav() {
-  const location = useLocation();
+  const pathname = usePathname();
 
   return (
     <motion.nav
@@ -22,11 +25,11 @@ export function BottomNav() {
       <div className="bg-card/80 backdrop-blur-xl border-t border-glass-border">
         <div className="flex items-center justify-around py-2 px-4">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = pathname === item.path;
             return (
-              <NavLink
+              <Link
                 key={item.path}
-                to={item.path}
+                href={item.path}
                 className={cn(
                   isActive ? "nav-item-active" : "nav-item-inactive"
                 )}
@@ -40,7 +43,7 @@ export function BottomNav() {
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
-              </NavLink>
+              </Link>
             );
           })}
         </div>

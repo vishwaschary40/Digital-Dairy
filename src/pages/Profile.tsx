@@ -1,3 +1,4 @@
+"use client";
 import { motion } from "framer-motion";
 import { Download, Upload, LogOut, User, Shield, Database } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -149,7 +150,7 @@ const ProfilePage = () => {
 
         {/* Version Info */}
         <div className="text-center text-sm text-muted-foreground py-4">
-          <p>Life Dashboard 2026</p>
+          <p>Nenu Na picchi</p>
           <p>Version 1.0.0</p>
         </div>
       </motion.div>

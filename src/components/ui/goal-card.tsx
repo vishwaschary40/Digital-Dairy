@@ -1,26 +1,33 @@
 import { motion } from "framer-motion";
-import { Calendar, Target } from "lucide-react";
+import { Calendar, Target, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, differenceInDays } from "date-fns";
 
 interface GoalCardProps {
+  id?: string;
   title: string;
   description: string;
   progress: number;
-  deadline: Date;
+  deadline: Date | string; // Support both Date and ISO string
   type: "short" | "long";
   className?: string;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function GoalCard({
+  id,
   title,
   description,
   progress,
   deadline,
   type,
   className,
+  onEdit,
+  onDelete,
 }: GoalCardProps) {
-  const daysRemaining = differenceInDays(deadline, new Date());
+  const deadlineDate = typeof deadline === 'string' ? new Date(deadline) : deadline;
+  const daysRemaining = differenceInDays(deadlineDate, new Date());
   const isUrgent = daysRemaining <= 7 && daysRemaining > 0;
   const isOverdue = daysRemaining < 0;
 
@@ -55,7 +62,35 @@ export function GoalCard({
             {description}
           </p>
         </div>
-        <Target className="w-5 h-5 text-primary flex-shrink-0" />
+        <div className="flex items-center gap-2">
+          {onEdit && id && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(id);
+              }}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+              aria-label="Edit goal"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          )}
+          {onDelete && id && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(id);
+              }}
+              className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors text-destructive"
+              aria-label="Delete goal"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          <Target className="w-5 h-5 text-primary flex-shrink-0" />
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -87,7 +122,7 @@ export function GoalCard({
             : `${daysRemaining} days remaining`}
         </span>
         <span className="text-muted-foreground ml-auto">
-          {format(deadline, "MMM dd, yyyy")}
+          {format(deadlineDate, "MMM dd, yyyy")}
         </span>
       </div>
     </motion.div>

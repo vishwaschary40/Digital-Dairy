@@ -1,3 +1,4 @@
+"use client";
 import { motion } from "framer-motion";
 import { 
   Activity, 
@@ -114,7 +115,7 @@ const Index = () => {
         {/* Hero Section */}
         <motion.section variants={itemVariants} className="text-center py-6">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Good Morning, <span className="gradient-text">Explorer</span>
+            Ela Unnav, <span className="gradient-text">Explorer</span>
           </h1>
           <p className="text-muted-foreground">
             Track your journey through 2026

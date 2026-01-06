@@ -1,8 +1,10 @@
+/*
+"use client";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+// import { BrowserRouter, Routes, Route } from "react-router-dom"; // REMOVED
 import Index from "./pages/Index";
 import CalendarPage from "./pages/Calendar";
 import DailyLog from "./pages/DailyLog";
@@ -17,19 +19,16 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/2026/:date" element={<DailyLog />} />
-          <Route path="/goals" element={<GoalsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      // BrowserRouter removed
     </TooltipProvider>
   </QueryClientProvider>
 );
 
+export default App;
+*/
+
+// Export a dummy component to avoid build errors if this file is imported somewhere
+const App = () => {
+  return null;
+}
 export default App;

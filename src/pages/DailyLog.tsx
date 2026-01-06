@@ -1,10 +1,11 @@
+"use client";
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { 
-  ArrowLeft, 
-  Save, 
-  Image as ImageIcon, 
+import {
+  ArrowLeft,
+  Save,
+  Image as ImageIcon,
   Video,
   Smile,
   Plus,
@@ -27,8 +28,9 @@ interface HabitItem {
 }
 
 const DailyLog = () => {
-  const { date } = useParams<{ date: string }>();
-  const navigate = useNavigate();
+  const params = useParams();
+  const date = params?.date as string;
+  const router = useRouter();
   const { toast } = useToast();
 
   const parsedDate = date ? parse(date, "MM-dd", new Date(2026, 0, 1)) : new Date();
@@ -93,7 +95,7 @@ const DailyLog = () => {
         {/* Header */}
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => router.back()}
             className="p-2 rounded-lg hover:bg-muted transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -151,11 +153,10 @@ const DailyLog = () => {
               <button
                 key={habit.id}
                 onClick={() => toggleHabit(habit.id)}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                  habit.checked
-                    ? "bg-success/20 border border-success/40"
-                    : "bg-muted/30 border border-transparent hover:border-muted"
-                }`}
+                className={`flex items-center gap-3 p-3 rounded-lg transition-all ${habit.checked
+                  ? "bg-success/20 border border-success/40"
+                  : "bg-muted/30 border border-transparent hover:border-muted"
+                  }`}
               >
                 <Checkbox checked={habit.checked} />
                 <span className="text-sm font-medium">{habit.label}</span>

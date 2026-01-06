@@ -1,3 +1,4 @@
+"use client";
 import { motion } from "framer-motion";
 import { PageLayout } from "@/components/layout/page-layout";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";

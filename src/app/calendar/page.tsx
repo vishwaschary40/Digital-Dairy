@@ -61,7 +61,7 @@ export default function CalendarPage() {
                     </div>
                 </div>
 
-                <CalendarGrid loggedDates={loggedDates} year={2026} />
+                <CalendarGrid loggedDates={loggedDates} logs={logs} year={2026} />
 
                 <div className="glass-card p-4">
                     <h3 className="font-semibold mb-2">Stats</h3>

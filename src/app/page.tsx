@@ -10,7 +10,8 @@ import {
     Dumbbell,
     Brain,
     Flame,
-    Bookmark
+    Bookmark,
+    Calendar
 } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { StatCard } from "@/components/ui/stat-card";
@@ -25,7 +26,8 @@ import { useGoals } from "@/hooks/use-goals";
 import { useRemembered } from "@/hooks/use-remembered";
 import { useAuth } from "@/lib/firebase/auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { format, parse } from "date-fns";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -124,8 +126,8 @@ export default function Home() {
                             variant="success"
                         />
                         <StatCard
-                            title="Today's Spends"
-                            value={`₹${stats.latestDailySpends.toLocaleString()}`}
+                            title="Total Spends"
+                            value={`₹${stats.totalDailySpends.toLocaleString()}`}
                             icon={PiggyBank}
                             variant="primary"
                         />
@@ -325,10 +327,28 @@ export default function Home() {
                     )}
                 </motion.section>
 
+                {/* Daily Summaries Button */}
+                <motion.section variants={itemVariants}>
+                    <div className="glass-card p-6 text-center">
+                        <Calendar className="w-12 h-12 mx-auto mb-4 text-primary opacity-50" />
+                        <h3 className="text-lg font-semibold mb-2">View All Daily Summaries</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            See all your logged days in one place
+                        </p>
+                        <a
+                            href="/summaries"
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-primary text-primary-foreground font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+                        >
+                            <Calendar className="w-5 h-5" />
+                            <span>View Summaries ({logs.length})</span>
+                        </a>
+                    </div>
+                </motion.section>
+
                 {/* Mini Calendar */}
                 <motion.section variants={itemVariants}>
                     <h2 className="text-lg font-semibold mb-4">Calendar View</h2>
-                    <CalendarGrid loggedDates={loggedDates} />
+                    <CalendarGrid loggedDates={loggedDates} logs={logs} />
                 </motion.section>
             </motion.div>
         </PageLayout>

@@ -30,6 +30,7 @@ export interface DailyLogData {
         amount: number;
     }[];
     totalDaySpends?: number;
+    whatDidYouEat?: string;
     createdAt?: string;
     updatedAt?: string;
 }

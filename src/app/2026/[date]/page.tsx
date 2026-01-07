@@ -11,7 +11,8 @@ import {
     Smile,
     Plus,
     Minus,
-    Check
+    Check,
+    Utensils
 } from "lucide-react";
 import { format, parse } from "date-fns";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -39,12 +40,8 @@ interface LogEntry {
     mood?: number;
     masturbation_count?: number;
     masturbationCount?: number;
-    expenses?: number;
-    savings?: number;
-    mutual_fund_value?: number;
-    mutualFund?: number;
-    portfolio_value?: number;
-    portfolio?: number;
+    vratham_count?: number;
+    vrathamCount?: number;
     wakeTime?: string;
     sleepTime?: string;
     studyHours?: number;
@@ -52,6 +49,12 @@ interface LogEntry {
     habits?: Record<string, boolean | number>;
     photos?: string[];
     videos?: string[];
+    daySpends?: {
+        label: string;
+        amount: number;
+    }[];
+    totalDaySpends?: number;
+    whatDidYouEat?: string;
 }
 
 export default function DailyLog() {
@@ -80,10 +83,7 @@ export default function DailyLog() {
         { id: "journaling", label: "Journaling", checked: false },
     ]);
     const [masturbationCount, setMasturbationCount] = useState(0);
-    const [expenses, setExpenses] = useState("");
-    const [savings, setSavings] = useState("");
-    const [mutualFund, setMutualFund] = useState("");
-    const [portfolio, setPortfolio] = useState("");
+    const [vrathamCount, setVrathamCount] = useState(0);
     const [wakeTime, setWakeTime] = useState("");
     const [sleepTime, setSleepTime] = useState("");
     const [studyHours, setStudyHours] = useState("");
@@ -91,6 +91,10 @@ export default function DailyLog() {
     const [photos, setPhotos] = useState<string[]>([]);
     const [videos, setVideos] = useState<string[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [daySpends, setDaySpends] = useState<{ label: string; amount: string }[]>([
+        { label: "", amount: "" },
+    ]);
+    const [whatDidYouEat, setWhatDidYouEat] = useState("");
 
     // Fetch existing log
     useEffect(() => {
@@ -102,10 +106,7 @@ export default function DailyLog() {
                     setNotes(logData.notes || "");
                     setMood([logData.mood || 7]);
                     setMasturbationCount(logData.masturbation_count || logData.masturbationCount || 0);
-                    setExpenses(logData.expenses?.toString() || "");
-                    setSavings(logData.savings?.toString() || "");
-                    setMutualFund((logData.mutual_fund_value || logData.mutualFund)?.toString() || "");
-                    setPortfolio((logData.portfolio_value || logData.portfolio)?.toString() || "");
+                    setVrathamCount(logData.vratham_count || logData.vrathamCount || 0);
                     setWakeTime(logData.wakeTime || "");
                     setSleepTime(logData.sleepTime || "");
                     // Support both habits.study and studyHours
@@ -115,6 +116,17 @@ export default function DailyLog() {
                     setReadingMinutes(readingValue.toString());
                     setPhotos(logData.photos || []);
                     setVideos(logData.videos || []);
+
+                    if (logData.daySpends && logData.daySpends.length > 0) {
+                        setDaySpends(
+                            logData.daySpends.map((item) => ({
+                                label: item.label,
+                                amount: item.amount.toString(),
+                            }))
+                        );
+                    }
+
+                    setWhatDidYouEat(logData.whatDidYouEat || "");
 
                     // Restore habits
                     if (logData.habits) {
@@ -167,6 +179,30 @@ export default function DailyLog() {
         if (value <= 8) return "text-info";
         return "text-success";
     };
+
+    const handleDaySpendChange = (index: number, field: "label" | "amount", value: string) => {
+        setDaySpends((prev) =>
+            prev.map((item, i) =>
+                i === index
+                    ? {
+                        ...item,
+                        [field]: value,
+                    }
+                    : item
+            )
+        );
+    };
+
+    const addDaySpendRow = () => {
+        setDaySpends((prev) => [...prev, { label: "", amount: "" }]);
+    };
+
+    const removeDaySpendRow = (index: number) => {
+        setDaySpends((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const getTotalDaySpends = () =>
+        daySpends.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -246,6 +282,18 @@ export default function DailyLog() {
         const habitMap = habits.reduce((acc, h) => ({ ...acc, [h.id]: h.checked }), {} as Record<string, boolean>);
 
         // Align with requirements: use snake_case for some fields
+        const totalDaySpends = daySpends.reduce(
+            (sum, item) => sum + (parseFloat(item.amount) || 0),
+            0
+        );
+
+        const cleanedDaySpends = daySpends
+            .filter((item) => item.label.trim() !== "" || item.amount.trim() !== "")
+            .map((item) => ({
+                label: item.label.trim(),
+                amount: parseFloat(item.amount) || 0,
+            }));
+
         const logData = {
             id: logId,
             date: logId,
@@ -258,16 +306,16 @@ export default function DailyLog() {
                 reading: parseFloat(readingMinutes) || 0,
             },
             masturbation_count: masturbationCount,
-            expenses: parseFloat(expenses) || 0,
-            savings: parseFloat(savings) || 0,
-            mutual_fund_value: parseFloat(mutualFund) || 0,
-            portfolio_value: parseFloat(portfolio) || 0,
+            vratham_count: vrathamCount,
             wakeTime,
             sleepTime,
             studyHours: parseFloat(studyHours) || 0,
             readingMinutes: parseFloat(readingMinutes) || 0,
             photos,
             videos,
+            daySpends: cleanedDaySpends,
+            totalDaySpends,
+            whatDidYouEat,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
         };
@@ -427,78 +475,144 @@ export default function DailyLog() {
                     </div>
                 </div>
 
-                {/* Counter */}
+                {/* Counters */}
                 <div className="glass-card p-4 space-y-4">
-                    <h2 className="font-semibold">Masturbation Counter</h2>
-                    <div className="flex items-center justify-center gap-4">
-                        <button
-                            onClick={() => setMasturbationCount(Math.max(0, masturbationCount - 1))}
-                            className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                        >
-                            <Minus className="w-5 h-5" />
-                        </button>
-                        <motion.span
-                            key={masturbationCount}
-                            initial={{ scale: 0.8 }}
-                            animate={{ scale: 1 }}
-                            className="text-4xl font-bold w-16 text-center"
-                        >
-                            {masturbationCount}
-                        </motion.span>
-                        <button
-                            onClick={() => setMasturbationCount(masturbationCount + 1)}
-                            className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                        >
-                            <Plus className="w-5 h-5" />
-                        </button>
+                    <h2 className="font-semibold">Counters</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-medium text-muted-foreground">
+                                Masturbation Counter
+                            </h3>
+                            <div className="flex items-center justify-center gap-4">
+                                <button
+                                    onClick={() => setMasturbationCount(Math.max(0, masturbationCount - 1))}
+                                    className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                                >
+                                    <Minus className="w-5 h-5" />
+                                </button>
+                                <motion.span
+                                    key={masturbationCount}
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                    className="text-4xl font-bold w-16 text-center"
+                                >
+                                    {masturbationCount}
+                                </motion.span>
+                                <button
+                                    onClick={() => setMasturbationCount(masturbationCount + 1)}
+                                    className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-medium text-muted-foreground">
+                                Vratham Counter
+                            </h3>
+                            <div className="flex items-center justify-center gap-4">
+                                <button
+                                    onClick={() => setVrathamCount(Math.max(0, vrathamCount - 1))}
+                                    className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                                >
+                                    <Minus className="w-5 h-5" />
+                                </button>
+                                <motion.span
+                                    key={vrathamCount}
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                    className="text-4xl font-bold w-16 text-center"
+                                >
+                                    {vrathamCount}
+                                </motion.span>
+                                <button
+                                    onClick={() => setVrathamCount(vrathamCount + 1)}
+                                    className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Finances */}
+                {/* Day Spends */}
                 <div className="glass-card p-4 space-y-4">
-                    <h2 className="font-semibold">Finances</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm text-muted-foreground">Expenses (₹)</label>
-                            <Input
-                                type="number"
-                                value={expenses}
-                                onChange={(e) => setExpenses(e.target.value)}
-                                placeholder="0"
-                                className="input-dark"
-                            />
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-semibold">Day Spends</h2>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={addDaySpendRow}
+                        >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Row
+                        </Button>
+                    </div>
+
+                    <div className="border border-glass-border rounded-lg overflow-hidden">
+                        <div className="grid grid-cols-[2fr,1fr,auto] bg-muted/40 text-xs font-medium text-muted-foreground px-3 py-2">
+                            <span>Expense</span>
+                            <span className="text-right">Amount (₹)</span>
+                            <span></span>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm text-muted-foreground">Savings (₹)</label>
-                            <Input
-                                type="number"
-                                value={savings}
-                                onChange={(e) => setSavings(e.target.value)}
-                                placeholder="0"
-                                className="input-dark"
-                            />
+                        <div className="divide-y divide-glass-border">
+                            {daySpends.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="grid grid-cols-[2fr,1fr,auto] gap-2 px-3 py-2 items-center"
+                                >
+                                    <Input
+                                        placeholder="Expense detail"
+                                        value={item.label}
+                                        onChange={(e) =>
+                                            handleDaySpendChange(index, "label", e.target.value)
+                                        }
+                                        className="input-dark h-8 text-sm"
+                                    />
+                                    <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={item.amount}
+                                        onChange={(e) =>
+                                            handleDaySpendChange(index, "amount", e.target.value)
+                                        }
+                                        className="input-dark h-8 text-sm text-right"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeDaySpendRow(index)}
+                                        className="p-1 rounded-full hover:bg-muted transition-colors"
+                                    >
+                                        <Minus className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm text-muted-foreground">Mutual Fund (₹)</label>
-                            <Input
-                                type="number"
-                                value={mutualFund}
-                                onChange={(e) => setMutualFund(e.target.value)}
-                                placeholder="0"
-                                className="input-dark"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm text-muted-foreground">Portfolio (₹)</label>
-                            <Input
-                                type="number"
-                                value={portfolio}
-                                onChange={(e) => setPortfolio(e.target.value)}
-                                placeholder="0"
-                                className="input-dark"
-                            />
+                        <div className="flex items-center justify-between px-3 py-2 bg-muted/30 text-sm font-medium">
+                            <span>Total</span>
+                            <span>₹ {getTotalDaySpends().toFixed(2)}</span>
                         </div>
                     </div>
+                </div>
+
+                {/* What did you eat? */}
+                <div className="glass-card p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Utensils className="w-5 h-5 text-primary" />
+                        <h2 className="font-semibold">What did you eat?</h2>
+                    </div>
+                    <Textarea
+                        value={whatDidYouEat}
+                        onChange={(e) => setWhatDidYouEat(e.target.value)}
+                        placeholder="List what you ate today or write a short paragraph...&#10;&#10;Example:&#10;- Breakfast: Toast with eggs&#10;- Lunch: Rice with dal and vegetables&#10;- Dinner: Pasta with tomato sauce&#10;&#10;Or write a paragraph describing your meals."
+                        className="input-dark min-h-[120px] resize-none font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        You can write a list (one item per line) or a short paragraph describing your meals.
+                    </p>
                 </div>
 
                 {/* Media Upload */}

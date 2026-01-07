@@ -9,17 +9,20 @@ import {
     BookOpen,
     Dumbbell,
     Brain,
-    Flame
+    Flame,
+    Bookmark
 } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { StatCard } from "@/components/ui/stat-card";
 import { GoalCard } from "@/components/ui/goal-card";
+import { RememberedItemCard } from "@/components/ui/remembered-item-card";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { LineChartComponent } from "@/components/charts/line-chart";
 import { BarChartComponent } from "@/components/charts/bar-chart";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { useData } from "@/hooks/use-data";
 import { useGoals } from "@/hooks/use-goals";
+import { useRemembered } from "@/hooks/use-remembered";
 import { useAuth } from "@/lib/firebase/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -43,6 +46,7 @@ export default function Home() {
     const { user } = useAuth();
     const { logs, loading, stats } = useData();
     const { goals, shortTermGoals, longTermGoals, goalsNearingDeadline, loading: goalsLoading } = useGoals();
+    const { items: rememberedItems, loading: rememberedLoading } = useRemembered();
     const router = useRouter();
 
     useEffect(() => {
@@ -72,17 +76,6 @@ export default function Home() {
         value: log.habits?.gym ? 1 : 0
     }));
 
-    const portfolioData = logs.slice(0, 30).reverse().map(log => ({
-        name: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        value: log.portfolio_value || log.portfolio || 0
-    }));
-
-    const investmentData = logs.slice(0, 30).reverse().map(log => ({
-        name: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        portfolio: log.portfolio_value || log.portfolio || 0,
-        mutualFund: log.mutual_fund_value || log.mutualFund || 0,
-    }));
-
     const masturbationData = logs.slice(0, 30).reverse().map(log => ({
         name: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         value: log.masturbation_count || log.masturbationCount || 0
@@ -98,11 +91,6 @@ export default function Home() {
     });
 
     const loggedDates = logs.map(l => l.date);
-
-    // Latest Log Stats
-    const latestLog = logs[0] || {};
-    const totalSavings = logs.reduce((acc, log) => acc + (Number(log.savings) || 0), 0);
-    const totalReading = logs.reduce((acc, log) => acc + (Number(log.readingMinutes) || 0), 0);
 
     return (
         <PageLayout>
@@ -128,7 +116,7 @@ export default function Home() {
                         <Activity className="w-5 h-5 text-primary" />
                         Today's Overview
                     </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
                         <StatCard
                             title="Gym Streak"
                             value={`${stats.gymStreak} days`}
@@ -136,15 +124,15 @@ export default function Home() {
                             variant="success"
                         />
                         <StatCard
-                            title="Portfolio"
-                            value={`₹${stats.latestPortfolio.toLocaleString()}`}
-                            icon={TrendingUp}
+                            title="Today's Spends"
+                            value={`₹${stats.latestDailySpends.toLocaleString()}`}
+                            icon={PiggyBank}
                             variant="primary"
                         />
                         <StatCard
-                            title="Total Savings"
-                            value={`₹${stats.totalSavings.toLocaleString()}`}
-                            icon={PiggyBank}
+                            title="Vratham Days"
+                            value={`${stats.totalVrathamCount}`}
+                            icon={Flame}
                             variant="default"
                         />
                         <StatCard
@@ -154,6 +142,16 @@ export default function Home() {
                             variant="default"
                         />
                     </div>
+                    {/* Quick Access Button */}
+                    {/* <div className="flex justify-center">
+                        <a
+                            href="/remembered"
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-primary text-primary-foreground font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+                        >
+                            <Bookmark className="w-5 h-5" />
+                            <span>To Be Remembered</span>
+                        </a>
+                    </div> */}
                 </motion.section>
 
                 {/* Progress Ring & Quick Actions */}
@@ -224,16 +222,6 @@ export default function Home() {
                                 title="Gym Sessions (Last 30 Days)"
                                 color="success"
                             />
-                            <LineChartComponent
-                                data={investmentData.map(d => ({ name: d.name, value: d.portfolio }))}
-                                title="Portfolio Value Growth"
-                                color="primary"
-                            />
-                            <LineChartComponent
-                                data={investmentData.map(d => ({ name: d.name, value: d.mutualFund }))}
-                                title="Mutual Fund Value"
-                                color="info"
-                            />
                         </div>
                     ) : (
                         <div className="glass-card p-8 text-center text-muted-foreground">
@@ -297,6 +285,41 @@ export default function Home() {
                                 className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition"
                             >
                                 Add your first goal
+                            </a>
+                        </div>
+                    )}
+                </motion.section>
+
+                {/* To Be Remembered Section */}
+                <motion.section variants={itemVariants}>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold flex items-center gap-2">
+                            <Bookmark className="w-5 h-5 text-primary" />
+                            To Be Remembered
+                        </h2>
+                        <a
+                            href="/remembered"
+                            className="text-sm font-medium text-primary hover:underline"
+                        >
+                            Manage items
+                        </a>
+                    </div>
+                    {!rememberedLoading && rememberedItems.length > 0 ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {rememberedItems.slice(0, 6).map((item) => (
+                                <RememberedItemCard key={item.id} {...item} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="glass-card p-8 text-center text-muted-foreground space-y-3">
+                            <Bookmark className="w-8 h-8 mx-auto opacity-50" />
+                            <p>No items yet. Start adding important information!</p>
+                            <a
+                                href="/remembered"
+                                className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition"
+                            >
+                                <Bookmark className="w-4 h-4 mr-2" />
+                                Add your first item
                             </a>
                         </div>
                     )}

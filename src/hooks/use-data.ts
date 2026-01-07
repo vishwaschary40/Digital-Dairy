@@ -17,18 +17,19 @@ export interface DailyLogData {
     };
     masturbation_count?: number;
     masturbationCount?: number; // Support both naming conventions
-    expenses?: number;
-    savings?: number;
-    mutual_fund_value?: number;
-    mutualFund?: number; // Support both naming conventions
-    portfolio_value?: number;
-    portfolio?: number; // Support both naming conventions
+    vratham_count?: number;
+    vrathamCount?: number; // Support both naming conventions
     sleepTime?: string;
     wakeTime?: string;
     studyHours?: number;
     readingMinutes?: number;
     photos?: string[];
     videos?: string[];
+    daySpends?: {
+        label: string;
+        amount: number;
+    }[];
+    totalDaySpends?: number;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -136,13 +137,13 @@ export function useData() {
             gymStreak: getGymStreak(),
             gymSessions: getTotalGymSessions(),
             totalMasturbationCount: logs.reduce((acc, log) => acc + (log.masturbation_count || log.masturbationCount || 0), 0),
-            totalSavings: logs.reduce((acc, log) => acc + (Number(log.savings) || 0), 0),
+            totalVrathamCount: logs.reduce((acc, log) => acc + (log.vratham_count || log.vrathamCount || 0), 0),
             totalReadingHours: logs.reduce((acc, log) => {
                 const reading = log.readingMinutes || (log.habits?.reading as number) || 0;
                 return acc + (reading / 60);
             }, 0),
-            latestPortfolio: logs.length > 0 ? (logs[0].portfolio_value || logs[0].portfolio || 0) : 0,
-            latestMutualFund: logs.length > 0 ? (logs[0].mutual_fund_value || logs[0].mutualFund || 0) : 0,
+            latestDailySpends: logs.length > 0 ? (logs[0].totalDaySpends || 0) : 0,
+            totalDailySpends: logs.reduce((acc, log) => acc + (Number(log.totalDaySpends) || 0), 0),
         }
     };
 }

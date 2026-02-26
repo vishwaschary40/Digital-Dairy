@@ -61,6 +61,8 @@ export function DailySummaryCard({
     const totalSpends = log.totalDaySpends || daySpends.reduce((sum, item) => sum + (item.amount || 0), 0);
     const photos = log.photos || [];
     const videos = log.videos || [];
+    const dsaDone = log.dsaDone || false;
+    const dsaNotes = log.dsaNotes || "";
 
     return (
         <motion.div
@@ -274,6 +276,29 @@ export function DailySummaryCard({
                         </div>
                     )}
 
+                    {/* DSA & Coding Practice */}
+                    {(dsaDone || dsaNotes) && (
+                        <div className="space-y-2">
+                            <h3 className="font-semibold flex items-center gap-2">
+                                <CheckCircle2 className="w-5 h-5 text-primary" />
+                                DSA & Coding Practice
+                            </h3>
+                            {dsaDone && (
+                                <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
+                                    <CheckCircle2 className="w-4 h-4 text-success" />
+                                    <span className="text-sm font-medium">Done DSA today ✓</span>
+                                </div>
+                            )}
+                            {dsaNotes && (
+                                <div className="glass-card p-4 rounded-lg bg-muted/20">
+                                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                                        {dsaNotes}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Day Spends */}
                     {daySpends.length > 0 && (
                         <div className="space-y-2">
@@ -382,7 +407,9 @@ export function DailySummaryCard({
                 daySpends.length === 0 &&
                 !log.whatDidYouEat &&
                 photos.length === 0 &&
-                videos.length === 0 && (
+                videos.length === 0 &&
+                !dsaDone &&
+                !dsaNotes && (
                     <div className="text-center py-12 text-muted-foreground">
                         <p className="text-lg mb-2">No data logged for this day.</p>
                         <p className="text-sm mb-4">Start logging to track your daily activities!</p>

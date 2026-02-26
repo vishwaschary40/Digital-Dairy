@@ -8,7 +8,7 @@ export interface DailyLogData {
     date: string;
     notes?: string;
     mood?: number;
-    habits?: { 
+    habits?: {
         gym?: boolean;
         meditation?: boolean;
         study?: number; // hours
@@ -23,6 +23,9 @@ export interface DailyLogData {
     wakeTime?: string;
     studyHours?: number;
     readingMinutes?: number;
+    // DSA / Coding practice fields
+    dsaDone?: boolean;
+    dsaNotes?: string;
     photos?: string[];
     videos?: string[];
     daySpends?: {
@@ -127,6 +130,38 @@ export function useData() {
         return logs.filter(l => l.habits?.gym).length;
     };
 
+    const getDsaStreak = () => {
+        if (logs.length === 0) return 0;
+        
+        // Sort logs by date (newest first)
+        const sorted = [...logs].sort((a, b) => 
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        // Calculate consecutive days streak
+        let streak = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        for (let i = 0; i < sorted.length; i++) {
+            const logDate = new Date(sorted[i].date);
+            logDate.setHours(0, 0, 0, 0);
+            
+            const expectedDate = new Date(today);
+            expectedDate.setDate(today.getDate() - streak);
+            
+            if (logDate.getTime() === expectedDate.getTime() && sorted[i].dsaDone) {
+                streak++;
+            } else if (streak === 0 && logDate.getTime() === today.getTime() && sorted[i].dsaDone) {
+                streak = 1;
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
+    };
+
     return {
         logs,
         loading,
@@ -143,6 +178,7 @@ export function useData() {
                 const reading = log.readingMinutes || (log.habits?.reading as number) || 0;
                 return acc + (reading / 60);
             }, 0),
+            dsaStreak: getDsaStreak(),
             latestDailySpends: logs.length > 0 ? (logs[0].totalDaySpends || 0) : 0,
             totalDailySpends: logs.reduce((acc, log) => acc + (Number(log.totalDaySpends) || 0), 0),
         }

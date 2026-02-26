@@ -46,6 +46,8 @@ interface LogEntry {
     sleepTime?: string;
     studyHours?: number;
     readingMinutes?: number;
+    dsaDone?: boolean;
+    dsaNotes?: string;
     habits?: Record<string, boolean | number>;
     photos?: string[];
     videos?: string[];
@@ -88,6 +90,8 @@ export default function DailyLog() {
     const [sleepTime, setSleepTime] = useState("");
     const [studyHours, setStudyHours] = useState("");
     const [readingMinutes, setReadingMinutes] = useState("");
+    const [dsaDone, setDsaDone] = useState(false);
+    const [dsaNotes, setDsaNotes] = useState("");
     const [photos, setPhotos] = useState<string[]>([]);
     const [videos, setVideos] = useState<string[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -114,6 +118,8 @@ export default function DailyLog() {
                     const readingValue = logData.habits?.reading || logData.readingMinutes || 0;
                     setStudyHours(studyValue.toString());
                     setReadingMinutes(readingValue.toString());
+                    setDsaDone(logData.dsaDone || false);
+                    setDsaNotes(logData.dsaNotes || "");
                     setPhotos(logData.photos || []);
                     setVideos(logData.videos || []);
 
@@ -203,6 +209,7 @@ export default function DailyLog() {
 
     const getTotalDaySpends = () =>
         daySpends.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -311,6 +318,8 @@ export default function DailyLog() {
             sleepTime,
             studyHours: parseFloat(studyHours) || 0,
             readingMinutes: parseFloat(readingMinutes) || 0,
+            dsaDone,
+            dsaNotes,
             photos,
             videos,
             daySpends: cleanedDaySpends,
@@ -470,6 +479,31 @@ export default function DailyLog() {
                                 onChange={(e) => setReadingMinutes(e.target.value)}
                                 placeholder="0"
                                 className="input-dark"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* DSA & Coding Practice */}
+                <div className="glass-card p-4 space-y-4">
+                    <h2 className="font-semibold">DSA & Coding Practice</h2>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-glass-border">
+                            <Checkbox
+                                checked={dsaDone}
+                                onCheckedChange={(checked) => setDsaDone(checked === true)}
+                            />
+                            <label className="text-sm font-medium cursor-pointer flex-1">
+                                Done DSA today?
+                            </label>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm text-muted-foreground">DSA Notes</label>
+                            <Textarea
+                                value={dsaNotes}
+                                onChange={(e) => setDsaNotes(e.target.value)}
+                                placeholder="What did you practice today? LeetCode, Codeforces, contests, concepts..."
+                                className="input-dark min-h-[100px] resize-none font-mono text-sm"
                             />
                         </div>
                     </div>

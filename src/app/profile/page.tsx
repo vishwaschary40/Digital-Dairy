@@ -177,6 +177,10 @@ export default function ProfilePage() {
                             <p className="text-2xl font-bold">{totalVideos}</p>
                             <p className="text-sm text-muted-foreground">Videos Uploaded</p>
                         </div>
+                        <div className="bg-muted/30 rounded-lg p-4 col-span-2">
+                            <p className="text-2xl font-bold">{stats.dsaStreak}</p>
+                            <p className="text-sm text-muted-foreground">DSA Streak (days)</p>
+                        </div>
                     </div>
                 </div>
 

@@ -143,6 +143,12 @@ export default function Home() {
                             icon={BookOpen}
                             variant="default"
                         />
+                        <StatCard
+                            title="DSA Streak"
+                            value={`${stats.dsaStreak} days`}
+                            icon={Brain}
+                            variant="success"
+                        />
                     </div>
                     {/* Quick Access Button */}
                     {/* <div className="flex justify-center">
